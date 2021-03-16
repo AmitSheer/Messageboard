@@ -14,9 +14,10 @@ namespace ariel{
             int vertical_start;
             int vertical_end;
     public:
-        Board(){}
-        void post(int horizontal, int vertical, Direction d, std::string message);
-        std::string read(int horizontal, int vertical, Direction d, int length);
+        Board() noexcept: board(0,"_"){};
+        void post(unsigned int horizontal, unsigned int vertical, Direction d, std::string message);
+        std::string read(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int length);
         void show();
     };
+//    Board::Board() noexcept:board(0,"_") {};
 }

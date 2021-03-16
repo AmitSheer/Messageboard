@@ -8,9 +8,9 @@ using namespace std;
 #include "Board.hpp"
 #include "Direction.hpp"
 using ariel::Direction;
-void ariel::Board::post(int horizontal, int vertical, Direction d, std::string message){
+void ariel::Board::post(unsigned int horizontal, unsigned int vertical, Direction d, std::string message){
 }
-std::string ariel::Board::read(int horizontal, int vertical, Direction d, int length) {
+std::string ariel::Board::read(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int length) {
     return "";
 }
 void ariel::Board::show() {}
