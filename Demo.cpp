@@ -7,7 +7,7 @@
 
 #include "Board.hpp"
 #include "Direction.hpp"
-using ariel::Direction;
+using namespace ariel;
 
 #include <iostream>
 #include <stdexcept>
@@ -15,10 +15,12 @@ using ariel::Direction;
 using namespace std;
 
 int main() {
-//    vector<std::string> vs(4,"-");
+//    vector<std::string> vs(4,"_");
 //    vs.push_back("a");
-//    vs.at(7).append("7");
-//    vs.at(2).append("d");
+////    vs.at(7).append("7");
+//    vs.at(2).append("ddd");
+//    vs.at(2).resize(7,'_');
+//    vs.resize(3);
 //    for (string i : vs){
 //        std::cout<< i << endl;
 //    }
@@ -31,10 +33,11 @@ int main() {
 		// prints "abyd__" (First letters are ab; then y from the "xyz"; then d; then two empty cells).
 
 	board.show(); // shows the board in a reasonable way. For example:
-		//    98:  _________
+//		//    98:  _________
 		//    99:  ____x____
 		//    100: __abyd___
 		//    101: ____z____
 		//    102: _________
+		exit(0);
 }
 
