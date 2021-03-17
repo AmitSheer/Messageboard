@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/demo.dir/Demo.cpp.o CMakeFiles/demo.dir/Board.cpp.o  -o demo 

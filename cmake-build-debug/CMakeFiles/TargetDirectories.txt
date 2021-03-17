@@ -1,0 +1,3 @@
+/home/amit/CLionProjects/Messageboard/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/amit/CLionProjects/Messageboard/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/amit/CLionProjects/Messageboard/cmake-build-debug/CMakeFiles/demo.dir
