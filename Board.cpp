@@ -11,15 +11,31 @@ using namespace std;
 #include "Direction.hpp"
 using ariel::Direction;
 
-void ariel::Board::update_bounderys(unsigned int horizontal, unsigned int vertical) {
-    if (horizontal > horizontal_end) {
-        horizontal_end = horizontal;
+/**
+ * updates the dimensions of the board
+ * @param horizontal
+ * @param vertical
+ * @param d - direction
+ * @param len - length of the word
+ */
+void ariel::Board::update_bounderys(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int len) {
+    unsigned int lenWithHorizontal=0;
+    unsigned int lenWithVertical=0;
+    if(d == Direction::Horizontal){
+        lenWithHorizontal=horizontal+1;
+        lenWithVertical=len+vertical;
+    }else if(d == Direction::Vertical){
+        lenWithHorizontal=horizontal+len;
+        lenWithVertical=1+vertical;
+    }
+    if (lenWithHorizontal > horizontal_end) {
+        horizontal_end = lenWithHorizontal;
     }
     if (horizontal < horizontal_start) {
         horizontal_start = horizontal;
     }
-    if (vertical > vertical_end) {
-        vertical_end = vertical;
+    if (lenWithVertical > vertical_end) {
+        vertical_end = lenWithVertical;
     }
     if (vertical < vertical_start) {
         vertical_start = vertical;
@@ -31,29 +47,39 @@ void ariel::Board::update_bounderys(unsigned int horizontal, unsigned int vertic
 
 }
 
-
+/**
+ * write new text on the board
+ * over writes existing text
+ * @param horizontal
+ * @param vertical
+ * @param d
+ * @param message - message to write
+ */
 void ariel::Board::post(unsigned int horizontal, unsigned int vertical, Direction d, const std::string &message){
-    unsigned int lenWithStartingPointHorizontal = message.length()+horizontal;
-    unsigned int lenWithStartingPointVertical = message.length()+vertical;
     switch (d) {
         case Direction::Horizontal:
-            update_bounderys(horizontal+1,lenWithStartingPointVertical);
+            update_bounderys(horizontal,vertical,d,message.length());
             board.at(horizontal).replace(vertical,message.length(),message);
             break;
         case Direction::Vertical:
-            update_bounderys(lenWithStartingPointHorizontal,vertical+1);
+            update_bounderys(horizontal,vertical,d,message.length());
             for (unsigned int i = 0; i <message.length() ; ++i) {
                 board.at(horizontal+i).at(vertical)=message[i];
             }
             break;
+        default:
+            throw std::out_of_range("invalid Direction type");
     }
 }
 
-
+/**
+ * reads the text in the horizontal direction
+ * @param horizontal
+ * @param vertical
+ * @param len - of the word to read
+ * @return the text in that location
+ */
 std::string ariel::Board::readHorizontal(unsigned int horizontal, unsigned int vertical, unsigned int len) {
-    /**
-     * read from specific row
-     */
     vector<string> str_from_board(1,"_");
     str_from_board.at(0).resize(len,'_');
     if(horizontal+1>(int)horizontal_end){return str_from_board.at(0);}
@@ -62,6 +88,13 @@ std::string ariel::Board::readHorizontal(unsigned int horizontal, unsigned int v
     }
     return str_from_board.at(0);
 }
+/**
+ * read in the vertical direction of the board
+ * @param horizontal
+ * @param vertical
+ * @param len of the word to read
+ * @return the text in that location
+ */
 std::string ariel::Board::readVertical(unsigned int horizontal, unsigned int vertical, unsigned int len) {
     vector<string> str_from_board(1,"_");
     str_from_board.at(0).resize(len,'_');
@@ -71,6 +104,14 @@ std::string ariel::Board::readVertical(unsigned int horizontal, unsigned int ver
     }
     return str_from_board.at(0);
 }
+/**
+ * calls the read function of each direction
+ * @param horizontal
+ * @param vertical
+ * @param d
+ * @param length
+ * @return the text found in the coordination's, direction and length inputted by the user
+ */
 std::string ariel::Board::read(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int length) {
     switch (d) {
         case Direction::Horizontal:
@@ -78,13 +119,12 @@ std::string ariel::Board::read(unsigned int horizontal, unsigned int vertical, D
         case Direction::Vertical:
             return readVertical(horizontal,vertical,length);
         default:
-            //TODO: add test for invalid Direction type
             throw std::out_of_range("invalid Direction type");
     }
 }
 
 void ariel::Board::show() {
     for (unsigned int i = horizontal_start; i < horizontal_end; ++i) {
-        std::cout << board.at(i).substr(vertical_start,vertical_end-vertical_start-1).data() << endl;
+        std::cout << string(board.at(i).substr(vertical_start,vertical_end-vertical_start)) << endl;
     }
 }

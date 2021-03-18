@@ -13,7 +13,7 @@ namespace ariel{
             unsigned int horizontal_end=0;
             unsigned int vertical_start=INT32_MAX;
             unsigned int vertical_end=0;
-            void update_bounderys(unsigned int horizontal, unsigned int vertical );
+            void update_bounderys(unsigned int horizontal, unsigned int vertical,Direction d, unsigned int len);
             std::string readHorizontal(unsigned int horizontal, unsigned int vertical, unsigned int len);
             std::string readVertical(unsigned int horizontal, unsigned int vertical, unsigned int len);
     public:

@@ -1,55 +1,49 @@
 //
 // Created by amit on 16/03/2021.
 //
-
+//#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 #include <string>
-#include <vector>
 #include <experimental/random>
-#include <array>
-#include <iostream>
-#include <ctime>
 #include <unistd.h>
+#include <algorithm>
 using namespace std;
+using namespace doctest;
+
 #include "Board.hpp"
 #include "Direction.hpp"
 using namespace ariel;
-const string HELLO="hello", WORLD="world", PLANET="planet earth";
 const int RANDOM_BOUNDERY=100, WORD_LEN_5=5,WORD_LEN_12=12;
 /*
  * credit to https://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
  */
-string gen_random(const unsigned int len) {
-
-    string tmp_s;
-    static const array<string,3> alphanum ={
-            "0123456789",
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "abcdefghijklmnopqrstuvwxyz"};
-
-    srand( (unsigned int) time(NULL) * (unsigned int)getpid());
-
-    tmp_s.reserve(len);
-
-    for (int i = 0; i < len; ++i) {
-        tmp_s += alphanum.at((unsigned int)rand() % (sizeof(alphanum) - 1));
-    }
-
-    return tmp_s;
-
+std::string gen_random( size_t length )
+{
+    auto randchar = []() -> char
+    {
+        const string charset =
+                "0123456789"
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                "abcdefghijklmnopqrstuvwxyz";
+        const size_t max_index = (charset.size() - 1);
+        return charset.at((unsigned int)rand() % max_index );
+    };
+    std::string str(length,0);
+    std::generate_n( str.begin(), length, randchar );
+    return str;
 }
 
 TEST_CASE("adding message to empty board horizontal") {
     Board board;
     string str = gen_random(WORD_LEN_5);
     board.post(0, 0, Direction::Horizontal, str);
-            CHECK(board.read(0, 0, Direction::Horizontal, WORD_LEN_5) == str);
+    CHECK(board.read(0, 0, Direction::Horizontal, WORD_LEN_5) == str);
 }
 
 TEST_CASE("adding message to empty board horizontal and reading verticlly") {
     Board board;
     string str = gen_random(WORD_LEN_5);
-    board.post(3, 0, Direction::Horizontal, str);
+    board.post(2, 0, Direction::Horizontal, str);
     string new_str = "__"+str.substr(0,1)+"__";
 
     CHECK(board.read(0, 0, Direction::Vertical, WORD_LEN_5) == new_str);
@@ -58,7 +52,7 @@ TEST_CASE("adding message to empty board horizontal and reading verticlly") {
 TEST_CASE("adding message to empty board vertical and reading horizontally"){
     Board board;
     string str = gen_random(WORD_LEN_5);
-    board.post(0,3,Direction::Vertical,str);
+    board.post(0,2,Direction::Vertical,str);
     string new_str = "__"+str.substr(0,1)+"__";
     CHECK(board.read(0,0,Direction::Horizontal,WORD_LEN_5)==new_str);
 }
@@ -141,8 +135,8 @@ TEST_CASE("add 2 messages same direction different length and columns"){
         string short_str = gen_random(WORD_LEN_5);
         board.post(0,0,Direction::Vertical,short_str);
         board.post(0,1,Direction::Vertical,long_str);
-        CHECK(board.read(0,0,Direction::Vertical,12)==long_str);
-        CHECK(board.read(0,1,Direction::Vertical,12)==short_str+"_______");
+        CHECK(board.read(0,0,Direction::Vertical,12)==short_str+"_______");
+        CHECK(board.read(0,1,Direction::Vertical,12)==long_str);
     }
 TEST_CASE("add 2 messages different directions"){
     Board board;
@@ -151,7 +145,7 @@ TEST_CASE("add 2 messages different directions"){
         board.post(0,0,Direction::Horizontal,short_str);
         board.post(0,0,Direction::Vertical,long_str);
         CHECK(board.read(0,0,Direction::Vertical,12)==long_str);
-        CHECK(board.read(0,0,Direction::Vertical,5)==long_str.at(0)+short_str.substr(0,4));
+        CHECK(board.read(0,0,Direction::Horizontal,5)==long_str.at(0)+short_str.substr(1,4));
     }
 TEST_CASE("add 2 messages different directions and distanced locations"){
     Board board;
