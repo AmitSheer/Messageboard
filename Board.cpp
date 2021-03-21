@@ -6,10 +6,13 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <array>
+
 using namespace std;
 #include "Board.hpp"
 #include "Direction.hpp"
 using ariel::Direction;
+
 
 /**
  * updates the dimensions of the board
@@ -18,33 +21,54 @@ using ariel::Direction;
  * @param d - direction
  * @param len - length of the word
  */
-void ariel::Board::update_bounderys(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int len) {
-    unsigned int lenWithHorizontal=0;
-    unsigned int lenWithVertical=0;
-    if(d == Direction::Horizontal){
-        lenWithHorizontal=horizontal+1;
-        lenWithVertical=len+vertical;
-    }else if(d == Direction::Vertical){
-        lenWithHorizontal=horizontal+len;
-        lenWithVertical=1+vertical;
-    }
-    if (lenWithHorizontal > horizontal_end) {
-        horizontal_end = lenWithHorizontal;
-    }
-    if (horizontal < horizontal_start) {
-        horizontal_start = horizontal;
-    }
-    if (lenWithVertical > vertical_end) {
-        vertical_end = lenWithVertical;
-    }
-    if (vertical < vertical_start) {
-        vertical_start = vertical;
-    }
-    board.resize(horizontal_end,"_");
-    for (auto ptr = board.begin(); ptr < board.end(); ptr++){
-        (*ptr).resize(vertical_end,'_');
-    }
 
+void ariel::Board::update_bounderys(unsigned int horizontal, unsigned int vertical, Direction d, unsigned int len) {
+    int lenWithHorizontal=0;
+    int lenWithVertical=0;
+    if(d == Direction::Horizontal){
+        lenWithHorizontal=(int)horizontal+1;
+        lenWithVertical=(int)(len+vertical);
+
+    }else if(d == Direction::Vertical){
+        lenWithHorizontal=(int)(horizontal+len);
+        lenWithVertical=1+(int)vertical;
+    }
+    if(this->horizontal_start==INT32_MAX&&this->horizontal_end==-1&&this->vertical_start==INT32_MAX&&this->vertical_end==-1) {
+        this->horizontal_start = horizontal;
+        this->horizontal_end = lenWithHorizontal;
+        this->vertical_start=vertical;
+        vertical_end = lenWithVertical;
+        board.insert(board.begin(),(unsigned int)horizontal_end-horizontal_start,"_");
+
+    }else{
+        if (lenWithHorizontal > horizontal_end) {
+            board.insert(board.end(),  ((unsigned int)lenWithHorizontal - (unsigned int)horizontal_end), "_");
+            horizontal_end = lenWithHorizontal;
+        }
+        if(horizontal<horizontal_start){
+            board.insert(board.begin(), horizontal_start - horizontal, "_");
+            this->horizontal_start=horizontal;
+        }
+
+        if (vertical < vertical_start) {
+            vertical_start = vertical;
+        }
+        if (lenWithVertical > vertical_end) {
+            this->vertical_end = lenWithVertical;
+        }
+    }
+        for (auto ptr = board.begin(); ptr < board.end(); ptr++){
+            (*ptr).resize((unsigned int)vertical_end-vertical_start,'_');
+        }
+}
+void ariel::Board::postHorizontal(unsigned int horizontal, unsigned int vertical, const std::string& message) {
+    board.at(horizontal-horizontal_start).replace(vertical-vertical_start,message.length(),message);
+}
+
+void ariel::Board::postVertical(unsigned int horizontal, unsigned int vertical, std::string message) {
+    for (unsigned int i = 0; i <message.length() ; ++i) {
+        board.at(horizontal-horizontal_start+i).at(vertical-vertical_start)=message[i];
+    }
 }
 
 /**
@@ -59,13 +83,11 @@ void ariel::Board::post(unsigned int horizontal, unsigned int vertical, Directio
     switch (d) {
         case Direction::Horizontal:
             update_bounderys(horizontal,vertical,d,message.length());
-            board.at(horizontal).replace(vertical,message.length(),message);
+            postHorizontal(horizontal,vertical,message);
             break;
         case Direction::Vertical:
             update_bounderys(horizontal,vertical,d,message.length());
-            for (unsigned int i = 0; i <message.length() ; ++i) {
-                board.at(horizontal+i).at(vertical)=message[i];
-            }
+            postVertical(horizontal,vertical,message);
             break;
         default:
             throw std::out_of_range("invalid Direction type");
@@ -82,9 +104,12 @@ void ariel::Board::post(unsigned int horizontal, unsigned int vertical, Directio
 std::string ariel::Board::readHorizontal(unsigned int horizontal, unsigned int vertical, unsigned int len) {
     vector<string> str_from_board(1,"_");
     str_from_board.at(0).resize(len,'_');
-    if(horizontal+1>(int)horizontal_end){return str_from_board.at(0);}
-    for (unsigned int i=0; i < len && i+vertical<vertical_end; ++i) {
-        str_from_board.at(0).at(i)=board.at(horizontal).at(vertical+i);
+    if(horizontal+1>horizontal_end||horizontal<horizontal_start){return str_from_board.at(0);}
+    for (unsigned int i=0; i < len; ++i) {
+        try{
+            str_from_board.at(0).at(i)=board.at(horizontal-horizontal_start).at(vertical-vertical_start+i);
+        } catch (const std::exception& e) {
+        }
     }
     return str_from_board.at(0);
 }
@@ -98,9 +123,13 @@ std::string ariel::Board::readHorizontal(unsigned int horizontal, unsigned int v
 std::string ariel::Board::readVertical(unsigned int horizontal, unsigned int vertical, unsigned int len) {
     vector<string> str_from_board(1,"_");
     str_from_board.at(0).resize(len,'_');
-    if(vertical+1>(int)vertical_end){return str_from_board.at(0);}
-    for (unsigned int i=0; i < len && i+horizontal<horizontal_end; ++i) {
-        str_from_board.at(0).at(i)=board.at(horizontal+i).at(vertical);
+    if(vertical+1>(int)vertical_end||vertical<vertical_start){return str_from_board.at(0);}
+    for (unsigned int i=0; i < len && horizontal+i<horizontal_end; ++i) {
+        try {
+            str_from_board.at(0).at(i) = board.at(horizontal-horizontal_start + i).at(vertical-vertical_start);
+        } catch (const std::exception& e) {
+
+        }
     }
     return str_from_board.at(0);
 }
@@ -124,7 +153,12 @@ std::string ariel::Board::read(unsigned int horizontal, unsigned int vertical, D
 }
 
 void ariel::Board::show() {
-    for (unsigned int i = horizontal_start; i < horizontal_end; ++i) {
-        std::cout << string(board.at(i).substr(vertical_start,vertical_end-vertical_start)) << endl;
+//    const std::array<char,7> special_char = {'\n','\'','\r','\a','\t','\\'};
+//    const std::array<string,6> special_char_nutral = {"\n","\'","\\r","\\a","\\t"};
+    for (auto & item : board) {
+//        for(int i=0;i<special_char.size();++i){
+//        }
+//        item.replace(item.begin(), item.end(), special_char.at(0), special_char_nutral.at(0));
+        std::cout << string(item) << endl;
     }
 }
